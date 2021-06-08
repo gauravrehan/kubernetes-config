@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: config-server
+  template:
+    metadata:
+      labels:
+        app: config-server
+    spec:
+      containers:
+        - name: config-server
+          image: gauravrehan/config-server:0.0.1-SNAPSHOT
+          env:
+          - name: server.port
+            value: "8888"
+          - name: discovery.server
+            value: "discovery-server-clusterip"
+          - name: discovery.port
+            value: "8761"
+          ports:
+            - containerPort: 8888
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    app: config-server
+  ports:
+    - port: 8888
+      targetPort: 8888
+      protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server-service
+spec:
+  type: NodePort
+  selector:
+    app: config-server
+  ports:
+    - port: 8888
+      targetPort: 8888
+      nodePort: 30888
+      protocol: TCP
+  
